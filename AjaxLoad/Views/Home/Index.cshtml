@@ -1,7 +1,15 @@
-﻿@model IEnumerable<UserRecord>
+﻿@* 
+    [EN] Receives the records from controller.
+    [RU] Здесь мы получаем записи от контроллера.
+*@
+@model IEnumerable<UserRecord>
 @{
     ViewBag.Title = "Index";
 }
+@* 
+    [EN] Generates HTML for initial records on the server side.
+    [RU] Создаем начальную HTML-разметку на стороне сервера для полученных записий.
+*@
 <div class="row">
     <div id="records_container" class="col-md-12">
         @foreach (var r in Model)
@@ -16,21 +24,42 @@
         <a id="loadmore_btn" class="btn btn-primary" href="#">Load more</a>
     </div>
 </div>
+@*
+    [EN] Adding JS script for 'Load more' button
+    [RU] Добавляем JS скрипт для кнопки 'Load more'
+*@
 @section scripts{
     <script type="text/javascript">
         $(document).ready(() => {
             var recordsContainer = $("#records_container");
             var loadMoreBtn = $("#loadmore_btn");
             loadMoreBtn.click(() => {
-                $.get(`/GetUserRecords?offset=${recordsContainer.children().length}`,
-                    data => {
+                // [EN]
+                // This is AJAX request to the our backend endpoint: HomeController.GetUserRecords
+                // 1. Compose the url to the endpoint, this url based on a number of records which already contained in the records container,
+                //    so, the initial page contains 10 items, then our url will be '/GetUserRecords?offset=10'.                
+                // 2. Then we will define callback to handle AJAX response.
+                //
+                // [RU]
+                // Это AJAX запрос к нашей конечной точке на сервере: HomeController.GetUserRecords
+                // 1. Создаем URL к конечной точке, конечный вид адреса зависит от кол-ва элементов, которые уже содержаться(отображены) на странице.
+                //    Таким образом, для начальное страницы с 10 элементами, адрес будет следующего вида '/GetUserRecords?offset=10'.
+                // 2. Далее мы определяем функцию обратного вызова (callback) для обработки ответа AJAX запроса.
+                $.get(`/GetUserRecords?offset=${recordsContainer.children().length}`, // 1
+                    data => {                                                         // 2
+                        // [EN] If we have any records in the response, create HTML for it and add to the DOM
+                        // [RU] Если ответ содержит записи, то генерируем HTML для них и добавляем в DOM.
                         if (data.length > 0) {
-                            console.log("Records loaded: %s", data.length);
+                            console.log("Records loaded: %s", data.length);                            
                             for (var o of data) {
                                 console.log("Record: %o", o);
                                 $(`<div><b>${o.name} (age ${o.age})</b> joined <b>${formatDate(new Date(o.joined))}</b><hr /></div>`).appendTo(recordsContainer);
                             }
-                        } else {
+                        }
+                        // Decorative function / Декоративная функция
+                        // [EN] If the response does not contains any records, then disable load more button
+                        // [RU] Если ответ не содержит записей, то отключаем кнопку
+                        else {
                             loadMoreBtn.addClass("disabled");
                         }
                     });
