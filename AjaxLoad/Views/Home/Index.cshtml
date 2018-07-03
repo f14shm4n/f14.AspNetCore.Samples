@@ -1,0 +1,53 @@
+﻿@model IEnumerable<UserRecord>
+@{
+    ViewBag.Title = "Index";
+}
+<div class="row">
+    <div id="records_container" class="col-md-12">
+        @foreach (var r in Model)
+        {
+            <div>
+                <b>@r.Name (age @r.Age)</b> joined <b>@r.Joined.ToString("dd/mm/yyyy")</b>
+                <hr />
+            </div>
+        }
+    </div>
+    <div id="loadmore_container">
+        <a id="loadmore_btn" class="btn btn-primary" href="#">Load more</a>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(document).ready(() => {
+            var recordsContainer = $("#records_container");
+            var loadMoreBtn = $("#loadmore_btn");
+            loadMoreBtn.click(() => {
+                $.get(`/GetUserRecords?offset=${recordsContainer.children().length}`,
+                    data => {
+                        if (data.length > 0) {
+                            console.log("Records loaded: %s", data.length);
+                            for (var o of data) {
+                                console.log("Record: %o", o);
+                                $(`<div><b>${o.name} (age ${o.age})</b> joined <b>${formatDate(new Date(o.joined))}</b><hr /></div>`).appendTo(recordsContainer);
+                            }
+                        } else {
+                            loadMoreBtn.addClass("disabled");
+                        }
+                    });
+                return false;
+            });
+        });
+
+        function formatDate(date) {
+            var dd = date.getDate();
+            if (dd < 10) dd = '0' + dd;
+
+            var mm = date.getMonth() + 1;
+            if (mm < 10) mm = '0' + mm;
+
+            var yy = date.getFullYear();
+
+            return dd + '.' + mm + '.' + yy;
+        }
+    </script>
+}
